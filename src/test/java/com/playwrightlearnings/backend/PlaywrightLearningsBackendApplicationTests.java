@@ -24,7 +24,7 @@ class PlaywrightLearningsBackendApplicationTests {
   static void setupPlaywright(){
     System.out.println("Setup Playwright and Browser");
     playwright = Playwright.create();
-    browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(50));
+    browser = playwright.chromium().launch();
   }
 
   @AfterAll
