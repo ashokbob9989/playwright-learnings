@@ -29,8 +29,7 @@ class PlaywrightLearningsBackendApplicationTests {
 
   @AfterAll
   static void closePlaywright(){
-    System.out.println("Close Browser and Playwright");
-    browser.close();
+    System.out.println("Close Playwright");
     playwright.close();
   }
 
@@ -43,8 +42,7 @@ class PlaywrightLearningsBackendApplicationTests {
 
   @AfterEach
   void closeContext(){
-    System.out.println("Close Page and Context");
-    page.close();
+    System.out.println("Close Context");
     context.close();
   }
 
