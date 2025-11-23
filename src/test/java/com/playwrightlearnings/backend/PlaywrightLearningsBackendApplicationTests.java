@@ -10,50 +10,54 @@ import java.nio.file.Paths;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 @SpringBootTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS) // allows non-static @BeforeAll/@AfterAll
 class PlaywrightLearningsBackendApplicationTests {
 
-//  Shared between all tests that belongs to this class
-  static Playwright playwright;
-  static Browser browser;
+  private Playwright playwright;
+  private Browser browser;
 
-//  New instance will be created for each new test
-  BrowserContext context;
-  Page page;
+  private BrowserContext context;
+  private Page page;
 
   @BeforeAll
-  static void setupPlaywright(){
+  void setupPlaywright() {
     System.out.println("Setup Playwright and Browser");
     playwright = Playwright.create();
-    browser = playwright.chromium().launch();
+    browser = playwright.chromium().launch(
+      new BrowserType.LaunchOptions().setHeadless(true) // CI purpose: enforce headless because Linux has no Display
+    );
   }
 
   @AfterAll
-  static void closePlaywright(){
+  void closePlaywright() {
     System.out.println("Close Playwright");
-    playwright.close();
+    if (browser != null) browser.close();
+    if (playwright != null) playwright.close();
   }
 
   @BeforeEach
-  void setupContext(){
+  void setupContext() {
     System.out.println("Setup Context and Page");
     context = browser.newContext();
     page = context.newPage();
   }
 
   @AfterEach
-  void closeContext(){
+  void closeContext() {
     System.out.println("Close Context");
-    context.close();
+    if (page != null) page.close();
+    if (context != null) context.close();
   }
 
-	@Test
-	void contextLoads() {
-	}
+  @Test
+  void contextLoads() {
+    // Spring Boot context test
+  }
 
   @Test
-  void testPlaywright(){
+  void testPlaywright() {
     page.navigate("https://playwright.dev");
-    System.out.println("Title: "+page.title());
+    System.out.println("Title: " + page.title());
     assertThat(page).hasTitle("Fast and reliable end-to-end testing for modern web apps | Playwright");
     Locator getStarted = page.locator("text=Get Started");
     assertThat(getStarted).hasAttribute("href", "/docs/intro");
@@ -62,20 +66,7 @@ class PlaywrightLearningsBackendApplicationTests {
   }
 
   @Test
-  void testCodegenPlaywright(){
-    try (Playwright playwright = Playwright.create()) {
-      Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions()
-        .setHeadless(false));
-      BrowserContext context = browser.newContext();
-      Page page = context.newPage();
-      page.navigate("https://playwright.dev/");
-      page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Get started")).click();
-      page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName("Installation")).click();
-    }
-  }
-
-  @Test
-  void tracingPlaywright(){
+  void tracingPlaywright() {
     context.tracing().start(new Tracing.StartOptions()
       .setScreenshots(true)
       .setSnapshots(true)
@@ -84,5 +75,4 @@ class PlaywrightLearningsBackendApplicationTests {
     context.tracing().stop(new Tracing.StopOptions()
       .setPath(Paths.get("trace.zip")));
   }
-
 }
