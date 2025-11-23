@@ -72,6 +72,7 @@ class PlaywrightLearningsBackendApplicationTests {
       .setSnapshots(true)
       .setSources(true));
     page.navigate("https://playwright.dev");
+    assertThat(page).hasTitle("Fast and reliable end-to-end testing for modern web apps | Playwright");
     context.tracing().stop(new Tracing.StopOptions()
       .setPath(Paths.get("trace.zip")));
   }
