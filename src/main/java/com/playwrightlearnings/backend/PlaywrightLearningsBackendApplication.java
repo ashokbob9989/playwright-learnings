@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class PlaywrightLearningsBackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PlaywrightLearningsBackendApplication.class, args);
+    SpringApplication.run(PlaywrightLearningsBackendApplication.class, args);
 	}
 
 }

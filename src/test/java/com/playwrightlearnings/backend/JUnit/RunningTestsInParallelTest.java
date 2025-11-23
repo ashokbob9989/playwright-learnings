@@ -1,66 +1,44 @@
 package com.playwrightlearnings.backend.JUnit;
 
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import org.junit.jupiter.api.*;
 
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * annotation to make JUnit create one instance of a class for all test methods within that class
  * (by default each JUnit will create a new instance of the class for each test method)
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RunningTestsInParallelTest {
+@UsePlaywright
+class RunningTestsInParallelTest {
 
-  Playwright playwright;
-  Browser browser;
+  @Test
+  void showLoadedPropertiesFile() throws Exception {
+    try (InputStream in = getClass().getClassLoader()
+      .getResourceAsStream("junit-platform.properties")) {
+      assertNotNull(in, "junit-platform.properties is not found");
+      Properties props = new Properties();
+      props.load(in);
 
-  BrowserContext context;
-  Page page;
-
-  @BeforeAll
-  void setupPlaywright() {
-    System.out.println("Setup Playwright and Browser");
-    playwright = Playwright.create();
-    browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
-  }
-
-  @AfterAll
-  void closePlaywright() {
-    System.out.println("Close Browser and Playwright");
-    if (browser != null) browser.close();
-    if (playwright != null) playwright.close();
-  }
-
-  @BeforeEach
-  void setupContext() {
-    System.out.println("Setup Context and Page");
-    context = browser.newContext();
-    page = context.newPage();
-  }
-
-  @AfterEach
-  void closeContext() {
-    System.out.println("Close Page and Context");
-    if (page != null) page.close();
-    if (context != null) context.close();
+      System.out.println("Loaded junit-platform.properties from src/test/resources:");
+      props.forEach((k, v) -> System.out.println(k + " = " + v));
+    }
   }
 
 }
 
+@UsePlaywright
 class Test1 extends RunningTestsInParallelTest {
   @Test
-  void contextLoads() {
-    // Spring Boot context test
-  }
-}
-
-class Test2 extends RunningTestsInParallelTest {
-  @Test
-  void testPlaywright() {
+  void testPlaywright(Page page) {
     page.navigate("https://playwright.dev");
     System.out.println("Title: " + page.title());
     assertThat(page).hasTitle("Fast and reliable end-to-end testing for modern web apps | Playwright");
@@ -71,14 +49,16 @@ class Test2 extends RunningTestsInParallelTest {
   }
 }
 
-class Test3 extends RunningTestsInParallelTest {
+@UsePlaywright
+class Test2 extends RunningTestsInParallelTest {
   @Test
-  void tracingPlaywright() {
+  void tracingPlaywright(Page page, BrowserContext context) {
     context.tracing().start(new Tracing.StartOptions()
       .setScreenshots(true)
       .setSnapshots(true)
       .setSources(true));
     page.navigate("https://playwright.dev");
+    assertThat(page).hasTitle("Fast and reliable end-to-end testing for modern web apps | Playwright");
     context.tracing().stop(new Tracing.StopOptions()
       .setPath(Paths.get("trace.zip")));
   }
